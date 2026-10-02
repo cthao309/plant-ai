@@ -5,6 +5,8 @@ import { useEffect, useState, type ChangeEvent } from "react";
 export default function Home() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isIdentifying, setIsIdentifying] = useState(false);
+  const [result, setResult] = useState<string | null>(null);
 
   useEffect(() => {
     if (!previewUrl) {
@@ -16,6 +18,7 @@ export default function Home() {
     };
   }, [previewUrl]);
 
+  // Image selection handler
   function handleImageChange(event: ChangeEvent<HTMLInputElement>) {
     const file = event.currentTarget.files?.[0] ?? null;
 
@@ -28,6 +31,17 @@ export default function Home() {
 
     setSelectedFile(file);
     setPreviewUrl(file ? URL.createObjectURL(file) : null);
+  }
+
+  // Plant identification handler
+  function handleIdentifyPlant() {
+    if (!selectedFile) {
+      return;
+    }
+
+    setIsIdentifying(true);
+    setResult("Plant identification in progress...");
+    setIsIdentifying(false);
   }
 
   return (
@@ -79,10 +93,16 @@ export default function Home() {
 
           <button
             type="button"
-            className="mt-6 rounded-lg bg-green-700 px-5 py-3 font-medium text-white hover:bg-green-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-700"
+            onClick={handleIdentifyPlant}
+            disabled={!selectedFile || isIdentifying}
+            className="mt-6 rounded-lg bg-green-700 px-5 py-3 font-medium text-white hover:bg-green-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Identify Plant
+            {isIdentifying ? "Identifying..." : "Identify Plant"}
           </button>
+
+          {result && (
+            <p className="mt-4 text-sm text-zinc-600">{result}</p>
+          )}
         </section>
       </div>
     </main>
