@@ -34,13 +34,26 @@ export default function Home() {
   }
 
   // Plant identification handler
-  function handleIdentifyPlant() {
+  async function handleIdentifyPlant() {
     if (!selectedFile) {
       return;
     }
 
+    const formData = new FormData();
+    formData.append("image", selectedFile);
+
     setIsIdentifying(true);
-    setResult("Plant identification in progress...");
+
+    const response = await fetch("/api/identify", {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await response.json();
+
+    console.log("API result:", data);
+
+    setResult(data.message);
     setIsIdentifying(false);
   }
 
