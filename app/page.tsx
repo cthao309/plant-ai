@@ -43,18 +43,30 @@ export default function Home() {
     formData.append("image", selectedFile);
 
     setIsIdentifying(true);
+    setResult(null);
 
-    const response = await fetch("/api/identify", {
-      method: "POST",
-      body: formData,
-    });
+    try {
+      const response = await fetch("/api/identify", {
+        method: "POST",
+        body: formData,
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
-    console.log("API result:", data);
+      if(!response.ok) {
+        throw new Error(data.message || "Image upload failed.");
+      }
 
-    setResult(data.message);
-    setIsIdentifying(false);
+      setResult(data.message);
+    } catch (error) {
+      if(error instanceof Error) {
+        setResult(`Error: ${error.message}`);
+      } else {
+        setResult("Something went wrong. Please try again.");
+      }
+    } finally {
+      setIsIdentifying(false);
+    }
   }
 
   return (
