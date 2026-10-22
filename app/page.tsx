@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, type ChangeEvent } from "react";
+import type { EdibilityInfo } from "@/types/plant";
 
 export default function Home() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -14,6 +15,7 @@ export default function Home() {
     scientificName: string;
     confidence: string;
     family: string;
+    edibility: EdibilityInfo;
   } | null>(null);
 
   useEffect(() => {
@@ -74,6 +76,7 @@ export default function Home() {
           scientificName: data.scientificName,
           confidence: data.confidence,
           family: data.family ?? "Unknown",
+          edibility: data.edibilityInfo,
         });
       }
     } catch (error) {
@@ -192,60 +195,100 @@ export default function Home() {
 
           {result && (
             <div className="mt-4 rounded-xl border border-gray-200 bg-gray-50 p-5 text-gray-800">
-      {activeCategory === "edibility" && (
-        <div>
-          <h3 className="mb-2 text-lg font-semibold">Edibility</h3>
-          <p>
-            Edibility information will appear here once we
-            connect our plant information source.
-          </p>
-        </div>
-      )}
+              {activeCategory === "edibility" && plantInfo && (
+                <div>
+                  <h3 className="mb-3 text-lg font-semibold">
+                    Edibility
+                  </h3>
 
-      {activeCategory === "toxicity" && (
-        <div>
-          <h3 className="mb-2 text-lg font-semibold">Toxicity</h3>
-          <p>
-            Known toxicity risks and safety precautions
-            will appear here.
-          </p>
-        </div>
-      )}
+                  <p className="mb-3 text-sm">
+                    <strong>Status:</strong>{" "}
+                    {plantInfo.edibility.status === "unknown"
+                      ? "Not verified"
+                      : plantInfo.edibility.status === "commonly_eaten"
+                        ? "Commonly eaten"
+                        : "Not recommended"}
+                  </p>
 
-      {activeCategory === "medicinal" && (
-        <div>
-          <h3 className="mb-2 text-lg font-semibold">Medicinal Benefits</h3>
-          <p>
-            Traditional medicinal uses, scientific evidence,
-            and potential risks will appear here.
-          </p>
-        </div>
-      )}
+                  {plantInfo.edibility.edibleParts.length > 0 && (
+                    <p className="mb-3 text-sm">
+                      <strong>Edible Parts:</strong>{" "}
+                      {plantInfo.edibility.edibleParts.join(", ")}
+                    </p>
+                  )}
 
-      {activeCategory === "details" && plantInfo && (
-        <div>
-          <h3 className="mb-3 text-lg font-semibold">
-            Plant Details
-          </h3>
+                  {plantInfo.edibility.culinaryUses.length > 0 && (
+                    <p className="mb-3 text-sm">
+                      <strong>Culinary Uses:</strong>{" "}
+                      {plantInfo.edibility.culinaryUses.join(", ")}
+                    </p>
+                  )}
 
-          <div className="space-y-2 text-sm">
-            <p>
-              <strong>Common Name:</strong> {plantInfo.plantName}
-            </p>
+                  <h4 className="mb-2 font-semibold">Precautions</h4>
 
-            <p>
-              <strong>Scientific Name:</strong>{" "}
-              <em>{plantInfo.scientificName}</em>
-            </p>
+                  <ul className="list-disc space-y-1 pl-5 text-sm">
+                    {plantInfo.edibility.precautions.map((precaution, index) => (
+                      <li key={index}>{precaution}</li>
+                    ))}
+                  </ul>
 
-            <p>
-              <strong>Family:</strong> {plantInfo.family}
-            </p>
+                  {plantInfo.edibility.sourceUrl && (
+                    <a
+                      href={plantInfo.edibility.sourceUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-3 inline-block text-sm text-green-700 underline"
+                    >
+                      View information source
+                    </a>
+            )}
           </div>
-        </div>
-      )}
-        </div>
-      )}
+          )}
+
+          {activeCategory === "toxicity" && (
+            <div>
+              <h3 className="mb-2 text-lg font-semibold">Toxicity</h3>
+              <p>
+                Known toxicity risks and safety precautions
+                will appear here.
+              </p>
+            </div>
+          )}
+
+          {activeCategory === "medicinal" && (
+            <div>
+              <h3 className="mb-2 text-lg font-semibold">Medicinal Benefits</h3>
+              <p>
+                Traditional medicinal uses, scientific evidence,
+                and potential risks will appear here.
+              </p>
+            </div>
+          )}
+
+          {activeCategory === "details" && plantInfo && (
+            <div>
+              <h3 className="mb-3 text-lg font-semibold">
+                Plant Details
+              </h3>
+
+              <div className="space-y-2 text-sm">
+                <p>
+                  <strong>Common Name:</strong> {plantInfo.plantName}
+                </p>
+
+                <p>
+                  <strong>Scientific Name:</strong>{" "}
+                  <em>{plantInfo.scientificName}</em>
+                </p>
+
+                <p>
+                  <strong>Family:</strong> {plantInfo.family}
+                </p>
+              </div>
+            </div>
+          )}
+          </div>
+          )}
         </section>
       </div>
     </main>

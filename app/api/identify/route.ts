@@ -1,3 +1,5 @@
+import type { EdibilityInfo } from "@/types/plant";
+
 export async function POST(request: Request) {
   // 1. Receive the image from our frontend
   const formData = await request.formData();
@@ -81,12 +83,22 @@ export async function POST(request: Request) {
 
     const confidence = (bestMatch.score * 100).toFixed(1);
 
+    const edibilityInfo: EdibilityInfo = {
+      status: "unknown",
+      edibleParts: [],
+      culinaryUses: [],
+      precautions: [
+        "Edibility has not been verified. Do not consume this plant without proper identification and expert advice."
+      ],
+      sourceUrl: null,
+    }
     return Response.json({
       message: `${plantName} — ${confidence}% confidence`,
       plantName,
       scientificName,
       confidence,
       family,
+      edibilityInfo,
     });
 
   } catch {
