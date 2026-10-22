@@ -77,6 +77,8 @@ export async function POST(request: Request) {
     const scientificName =
       bestMatch.species.scientificNameWithoutAuthor;
 
+    const family = bestMatch.species.family?.scientificNameWithoutAuthor?? "Unknown";
+
     const confidence = (bestMatch.score * 100).toFixed(1);
 
     return Response.json({
@@ -84,7 +86,9 @@ export async function POST(request: Request) {
       plantName,
       scientificName,
       confidence,
-    })
+      family,
+    });
+
   } catch {
     return Response.json(
       { message: "Unable to contact the plant identification service." },

@@ -13,6 +13,7 @@ export default function Home() {
     plantName: string;
     scientificName: string;
     confidence: string;
+    family: string;
   } | null>(null);
 
   useEffect(() => {
@@ -72,6 +73,7 @@ export default function Home() {
           plantName: data.plantName,
           scientificName: data.scientificName,
           confidence: data.confidence,
+          family: data.family ?? "Unknown",
         });
       }
     } catch (error) {
@@ -220,17 +222,30 @@ export default function Home() {
         </div>
       )}
 
-      {activeCategory === "details" && (
+      {activeCategory === "details" && plantInfo && (
         <div>
-          <h3 className="mb-2 text-lg font-semibold">Plant Details</h3>
-          <p>
-            Scientific name, plant family, and other
-            botanical details will appear here.
-          </p>
+          <h3 className="mb-3 text-lg font-semibold">
+            Plant Details
+          </h3>
+
+          <div className="space-y-2 text-sm">
+            <p>
+              <strong>Common Name:</strong> {plantInfo.plantName}
+            </p>
+
+            <p>
+              <strong>Scientific Name:</strong>{" "}
+              <em>{plantInfo.scientificName}</em>
+            </p>
+
+            <p>
+              <strong>Family:</strong> {plantInfo.family}
+            </p>
+          </div>
         </div>
       )}
-            </div>
-          )}
+        </div>
+      )}
         </section>
       </div>
     </main>
