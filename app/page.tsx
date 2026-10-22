@@ -7,6 +7,13 @@ export default function Home() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isIdentifying, setIsIdentifying] = useState(false);
   const [result, setResult] = useState<string | null>(null);
+  const [activeCategory, setActiveCategory] = useState
+("edibility");
+  const [plantInfo, setPlantInfo] = useState<{
+    plantName: string;
+    scientificName: string;
+    confidence: string;
+  } | null>(null);
 
   useEffect(() => {
     if (!previewUrl) {
@@ -44,6 +51,7 @@ export default function Home() {
 
     setIsIdentifying(true);
     setResult(null);
+    setPlantInfo(null);
 
     try {
       const response = await fetch("/api/identify", {
@@ -58,6 +66,14 @@ export default function Home() {
       }
 
       setResult(data.message);
+
+      if(data.plantName && data.scientificName && data.confidence != null) {
+        setPlantInfo({
+          plantName: data.plantName,
+          scientificName: data.scientificName,
+          confidence: data.confidence,
+        });
+      }
     } catch (error) {
       if(error instanceof Error) {
         setResult(`Error: ${error.message}`);
@@ -125,8 +141,95 @@ export default function Home() {
             {isIdentifying ? "Identifying..." : "Identify Plant"}
           </button>
 
+          {plantInfo && previewUrl && (
+            <div className="mt-6 flex items-center gap-4 rounded-xl border border-gray-200 p-4">
+              <img
+                src={previewUrl}
+                alt={plantInfo.plantName}
+                className="h-28 w-28 shrink-0 rounded-lg object-cover"
+              />
+
+              <div className="min-w-0 flex-1">
+                <h2 className="text-lg font-semibold text-gray-900">
+                  {plantInfo.plantName}
+                </h2>
+
+                <p className="mt-1 text-sm italic text-gray-500">
+                  {plantInfo.scientificName}
+                </p>
+
+                <p className="mt-2 text-sm font-medium text-green-700">
+                  {plantInfo.confidence}% confidence
+                </p>
+              </div>
+            </div>
+          )}
+
           {result && (
-            <p className="mt-4 text-sm text-zinc-600">{result}</p>
+            <div className="mt-6 flex flex-wrap gap-2">
+              {["edibility", "toxicity", "medicinal", "details"].map(
+                (category) => (
+                  <button
+                    key={category}
+                    type="button"
+                    onClick={() => setActiveCategory(category)}
+                    className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                      activeCategory === category
+                        ? "bg-green-600 text-white"
+                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    }`}
+                  >
+                    {category === "details"
+                      ? "Plant Details"
+                      : category.charAt(0).toUpperCase() + category.slice(1)}
+                  </button>
+                )
+              )}
+            </div>
+          )}
+
+          {result && (
+            <div className="mt-4 rounded-xl border border-gray-200 bg-gray-50 p-5 text-gray-800">
+      {activeCategory === "edibility" && (
+        <div>
+          <h3 className="mb-2 text-lg font-semibold">Edibility</h3>
+          <p>
+            Edibility information will appear here once we
+            connect our plant information source.
+          </p>
+        </div>
+      )}
+
+      {activeCategory === "toxicity" && (
+        <div>
+          <h3 className="mb-2 text-lg font-semibold">Toxicity</h3>
+          <p>
+            Known toxicity risks and safety precautions
+            will appear here.
+          </p>
+        </div>
+      )}
+
+      {activeCategory === "medicinal" && (
+        <div>
+          <h3 className="mb-2 text-lg font-semibold">Medicinal Benefits</h3>
+          <p>
+            Traditional medicinal uses, scientific evidence,
+            and potential risks will appear here.
+          </p>
+        </div>
+      )}
+
+      {activeCategory === "details" && (
+        <div>
+          <h3 className="mb-2 text-lg font-semibold">Plant Details</h3>
+          <p>
+            Scientific name, plant family, and other
+            botanical details will appear here.
+          </p>
+        </div>
+      )}
+            </div>
           )}
         </section>
       </div>

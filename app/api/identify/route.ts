@@ -74,11 +74,17 @@ export async function POST(request: Request) {
       bestMatch.species.commonNames?.[0] ||
       bestMatch.species.scientificNameWithoutAuthor;
 
+    const scientificName =
+      bestMatch.species.scientificNameWithoutAuthor;
+
     const confidence = (bestMatch.score * 100).toFixed(1);
 
     return Response.json({
       message: `${plantName} — ${confidence}% confidence`,
-    });
+      plantName,
+      scientificName,
+      confidence,
+    })
   } catch {
     return Response.json(
       { message: "Unable to contact the plant identification service." },
