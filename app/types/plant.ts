@@ -5,3 +5,9 @@ export type EdibilityInfo = {
   precautions: string[];
   sourceUrl: string | null;
 };
+
+export type RelatedPlantInfo = {
+  scientificName: string;
+  edibleParts: string[];
+  sourceUrl: string;
+};

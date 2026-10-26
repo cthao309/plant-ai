@@ -1,7 +1,10 @@
 "use client";
 
 import { useEffect, useState, type ChangeEvent } from "react";
-import type { EdibilityInfo } from "@/types/plant";
+import type {
+  EdibilityInfo,
+  RelatedPlantInfo,
+} from "@/app/types/plant";
 
 export default function Home() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -16,6 +19,7 @@ export default function Home() {
     confidence: string;
     family: string;
     edibility: EdibilityInfo;
+    relatedPlants: RelatedPlantInfo[];
   } | null>(null);
 
   useEffect(() => {
@@ -77,6 +81,7 @@ export default function Home() {
           confidence: data.confidence,
           family: data.family ?? "Unknown",
           edibility: data.edibilityInfo,
+          relatedPlants: data.relatedPlantInfo ?? [],
         });
       }
     } catch (error) {
@@ -210,11 +215,46 @@ export default function Home() {
                         : "Not recommended"}
                   </p>
 
-                  {plantInfo.edibility.edibleParts.length > 0 && (
-                    <p className="mb-3 text-sm">
-                      <strong>Edible Parts:</strong>{" "}
-                      {plantInfo.edibility.edibleParts.join(", ")}
-                    </p>
+                  {plantInfo.relatedPlants.length > 0 && (
+                    <div className="mt-6 border-t border-gray-200 pt-4">
+                      <h3 className="text-lg font-semibold">
+                        Related Botanical Information
+                      </h3>
+
+                      <p className="mt-2 text-sm text-gray-600">
+                        These records describe related botanical varieties,
+                        not necessarily the plant in your photo.
+                        They do not establish that the photographed
+                        plant is safe to consume.
+                      </p>
+
+                      {plantInfo.relatedPlants.map((plant) => (
+                        <div
+                          key={plant.scientificName}
+                          className="mt-4 rounded-lg border border-gray-200 p-4"
+                        >
+                          <p className="font-medium italic">
+                            {plant.scientificName}
+                          </p>
+
+                          <p className="mt-2">
+                            <strong>Documented edible parts:</strong>{" "}
+                            {plant.edibleParts.length > 0
+                              ? plant.edibleParts.join(", ")
+                              : "Not documented"}
+                          </p>
+
+                          <a
+                            href={plant.sourceUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mt-2 inline-block text-blue-600 underline"
+                          >
+                            View database source
+                          </a>
+                        </div>
+                      ))}
+                    </div>
                   )}
 
                   {plantInfo.edibility.culinaryUses.length > 0 && (

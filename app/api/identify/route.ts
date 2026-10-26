@@ -1,8 +1,10 @@
-import type { EdibilityInfo } from "@/types/plant";
+import type { EdibilityInfo } from "@/app/types/plant";
+import { searchEdiblePlant } from "@/app/lib/edibility";
 
 export async function POST(request: Request) {
   // 1. Receive the image from our frontend
   const formData = await request.formData();
+
   const image = formData.get("image");
 
   // 2. Validate the image
@@ -79,6 +81,37 @@ export async function POST(request: Request) {
     const scientificName =
       bestMatch.species.scientificNameWithoutAuthor;
 
+    let edibleData = null;
+
+    try {
+      edibleData = await searchEdiblePlant(scientificName);
+    } catch (error) {
+      console.error("Edibility lookup failed: ", error);
+    }
+
+    const relatedVarieties = edibleData?.results?.filter(
+      (plant: { scientific_name: string }) =>
+        plant.scientific_name.trim().toLowerCase().startsWith(scientificName.trim().toLowerCase() + " var.")
+    ) ?? [];
+
+    const relatedPlantInfo = relatedVarieties.map(
+      (plant: {
+        scientific_name: string;
+        edible_portion: string | null;
+        url: string;
+      }) => ({
+        scientificName: plant.scientific_name,
+
+        edibleParts: plant.edible_portion
+          ? plant.edible_portion
+              .split(",")
+              .map((part: string) => part.trim())
+              .filter(Boolean)
+          : [],
+        sourceUrl: plant.url,
+      })
+    );
+
     const family = bestMatch.species.family?.scientificNameWithoutAuthor?? "Unknown";
 
     const confidence = (bestMatch.score * 100).toFixed(1);
@@ -92,6 +125,7 @@ export async function POST(request: Request) {
       ],
       sourceUrl: null,
     }
+
     return Response.json({
       message: `${plantName} — ${confidence}% confidence`,
       plantName,
@@ -99,6 +133,7 @@ export async function POST(request: Request) {
       confidence,
       family,
       edibilityInfo,
+      relatedPlantInfo,
     });
 
   } catch {
