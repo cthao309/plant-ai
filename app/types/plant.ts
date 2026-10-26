@@ -11,3 +11,8 @@ export type RelatedPlantInfo = {
   edibleParts: string[];
   sourceUrl: string;
 };
+
+export type PlantMatchType =
+  | "exact"
+  | "related"
+  | "none";

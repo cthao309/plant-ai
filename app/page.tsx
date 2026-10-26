@@ -4,6 +4,7 @@ import { useEffect, useState, type ChangeEvent } from "react";
 import type {
   EdibilityInfo,
   RelatedPlantInfo,
+  PlantMatchType,
 } from "@/app/types/plant";
 
 export default function Home() {
@@ -20,6 +21,7 @@ export default function Home() {
     family: string;
     edibility: EdibilityInfo;
     relatedPlants: RelatedPlantInfo[];
+    matchType: PlantMatchType;
   } | null>(null);
 
   useEffect(() => {
@@ -82,6 +84,7 @@ export default function Home() {
           family: data.family ?? "Unknown",
           edibility: data.edibilityInfo,
           relatedPlants: data.relatedPlantInfo ?? [],
+          matchType: data.matchType ?? "none",
         });
       }
     } catch (error) {
@@ -217,6 +220,30 @@ export default function Home() {
 
                   {plantInfo.relatedPlants.length > 0 && (
                     <div className="mt-6 border-t border-gray-200 pt-4">
+
+                      <div className="mt-4 rounded-lg bg-gray-100 p-4">
+                        <p className="font-semibold">Database Match</p>
+
+                        {plantInfo.matchType === "exact" && (
+                          <p className="mt-2">
+                            An exact scientific-name match was found in the database.
+                          </p>
+                        )}
+
+                        {plantInfo.matchType === "related" && (
+                          <p className="mt-2">
+                            No exact species match was found. Related botanical
+                            varieties are available for reference.
+                          </p>
+                        )}
+
+                        {plantInfo.matchType === "none" && (
+                          <p className="mt-2">
+                            No matching botanical records were found.
+                          </p>
+                        )}
+                      </div>
+
                       <h3 className="text-lg font-semibold">
                         Related Botanical Information
                       </h3>

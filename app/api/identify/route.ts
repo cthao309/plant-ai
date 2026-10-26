@@ -1,4 +1,8 @@
-import type { EdibilityInfo } from "@/app/types/plant";
+import type {
+  EdibilityInfo,
+  PlantMatchType,
+} from "@/app/types/plant";
+
 import { searchEdiblePlant } from "@/app/lib/edibility";
 
 export async function POST(request: Request) {
@@ -94,6 +98,17 @@ export async function POST(request: Request) {
         plant.scientific_name.trim().toLowerCase().startsWith(scientificName.trim().toLowerCase() + " var.")
     ) ?? [];
 
+    const hasExactMatch = edibleData?.results?.some(
+      (plant: { scientific_name: string }) =>
+        plant.scientific_name.trim().toLowerCase() === scientificName.trim().toLowerCase()
+    ) ?? false;
+
+    const matchType: PlantMatchType = hasExactMatch
+      ? "exact"
+      : relatedVarieties.length > 0
+        ? "related"
+        : "none";
+
     const relatedPlantInfo = relatedVarieties.map(
       (plant: {
         scientific_name: string;
@@ -134,6 +149,7 @@ export async function POST(request: Request) {
       family,
       edibilityInfo,
       relatedPlantInfo,
+      matchType,
     });
 
   } catch {
