@@ -15,4 +15,5 @@ export type RelatedPlantInfo = {
 export type PlantMatchType =
   | "exact"
   | "related"
-  | "none";
+  | "none"
+  | "unavailable";

@@ -218,31 +218,39 @@ export default function Home() {
                         : "Not recommended"}
                   </p>
 
+                  <div className="mt-4 rounded-lg bg-gray-100 p-4">
+                    <p className="font-semibold">Database Match</p>
+
+                    {plantInfo.matchType === "exact" && (
+                      <p className="mt-2">
+                        An exact scientific-name match was found in the database.
+                      </p>
+                    )}
+
+                    {plantInfo.matchType === "related" && (
+                      <p className="mt-2">
+                        No exact species match was found. Related botanical
+                        varieties are available for reference.
+                      </p>
+                    )}
+
+                    {plantInfo.matchType === "none" && (
+                      <p className="mt-2">
+                        No matching botanical records were found.
+                      </p>
+                    )}
+
+                    {plantInfo.matchType === "unavailable" && (
+                      <p className="mt-2">
+                        The plant database is temporarily unavailable.
+                        Edibility information could not be retrieved.
+                        Please try again later.
+                      </p>
+                    )}
+                  </div>
+
                   {plantInfo.relatedPlants.length > 0 && (
                     <div className="mt-6 border-t border-gray-200 pt-4">
-
-                      <div className="mt-4 rounded-lg bg-gray-100 p-4">
-                        <p className="font-semibold">Database Match</p>
-
-                        {plantInfo.matchType === "exact" && (
-                          <p className="mt-2">
-                            An exact scientific-name match was found in the database.
-                          </p>
-                        )}
-
-                        {plantInfo.matchType === "related" && (
-                          <p className="mt-2">
-                            No exact species match was found. Related botanical
-                            varieties are available for reference.
-                          </p>
-                        )}
-
-                        {plantInfo.matchType === "none" && (
-                          <p className="mt-2">
-                            No matching botanical records were found.
-                          </p>
-                        )}
-                      </div>
 
                       <h3 className="text-lg font-semibold">
                         Related Botanical Information

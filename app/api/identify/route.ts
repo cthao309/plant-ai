@@ -86,10 +86,12 @@ export async function POST(request: Request) {
       bestMatch.species.scientificNameWithoutAuthor;
 
     let edibleData = null;
+    let edibleApiFailed = false;
 
     try {
       edibleData = await searchEdiblePlant(scientificName);
     } catch (error) {
+      edibleApiFailed = true;
       console.error("Edibility lookup failed: ", error);
     }
 
@@ -103,11 +105,13 @@ export async function POST(request: Request) {
         plant.scientific_name.trim().toLowerCase() === scientificName.trim().toLowerCase()
     ) ?? false;
 
-    const matchType: PlantMatchType = hasExactMatch
-      ? "exact"
-      : relatedVarieties.length > 0
-        ? "related"
-        : "none";
+    const matchType: PlantMatchType = edibleApiFailed
+      ? "unavailable"
+      : hasExactMatch
+        ? "exact"
+        : relatedVarieties.length > 0
+          ? "related"
+          : "none";
 
     const relatedPlantInfo = relatedVarieties.map(
       (plant: {
