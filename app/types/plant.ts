@@ -17,3 +17,14 @@ export type PlantMatchType =
   | "related"
   | "none"
   | "unavailable";
+
+export type EdiblePlantRecord = {
+  id: number;
+  scientific_name: string;
+  common_name: string | null;
+  family: string;
+  edible_portion: string | null;
+  known_hazards: boolean;
+  toxicity_level: string | null;
+  url: string;
+};
