@@ -2,11 +2,10 @@ import type {
   EdibilityInfo,
   PlantMatchType,
   EdiblePlantRecord,
-  ToxicityInfo,
-  ToxicityByCategory,
 } from "@/app/types/plant";
 
 import { searchEdiblePlant } from "@/app/lib/edibility";
+import { getPlantToxicity } from "@/app/lib/toxicity";
 
 export async function POST(request: Request) {
   // 1. Receive the image from our frontend
@@ -145,30 +144,9 @@ export async function POST(request: Request) {
         "Edibility has not been verified. Do not consume this plant without proper identification and expert advice."
       ],
       sourceUrl: null,
-    }
-
-    const toxicityInfo: ToxicityByCategory = {
-      human: {
-        status: "unknown",
-        toxicParts: [],
-        symptoms: [],
-        precautions: [
-          "Toxicity has not been verified.",
-           "Do not consume an unidentified plant without expert guidance."
-        ],
-        sourceUrl: null,
-      },
-      pets: {
-        status: "unknown",
-        toxicParts: [],
-        symptoms: [],
-        precautions: [
-         "Pet toxicity has not been verified.",
-          "Keep unidentified plants away from pets until confirmed safe."
-        ],
-        sourceUrl: null,
-      },
     };
+
+    const toxicityInfo = getPlantToxicity(scientificName);
 
     return Response.json({
       message: `${plantName} — ${confidence}% confidence`,
