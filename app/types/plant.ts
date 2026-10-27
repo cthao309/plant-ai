@@ -36,3 +36,8 @@ export type ToxicityInfo = {
   precautions: string[];
   sourceUrl: string | null;
 };
+
+export type ToxicityByCategory = {
+  human: ToxicityInfo;
+  pets: ToxicityInfo;
+};

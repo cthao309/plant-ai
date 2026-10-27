@@ -3,6 +3,7 @@ import type {
   PlantMatchType,
   EdiblePlantRecord,
   ToxicityInfo,
+  ToxicityByCategory,
 } from "@/app/types/plant";
 
 import { searchEdiblePlant } from "@/app/lib/edibility";
@@ -146,15 +147,27 @@ export async function POST(request: Request) {
       sourceUrl: null,
     }
 
-    const toxicityInfo: ToxicityInfo = {
-      status: "unknown",
-      toxicParts: [],
-      symptoms: [],
-      precautions: [
-        "Toxicity has not been verified.",
-         "Do not consume this plant without proper identification and expert advice."
-      ],
-      sourceUrl: null,
+    const toxicityInfo: ToxicityByCategory = {
+      human: {
+        status: "unknown",
+        toxicParts: [],
+        symptoms: [],
+        precautions: [
+          "Toxicity has not been verified.",
+           "Do not consume an unidentified plant without expert guidance."
+        ],
+        sourceUrl: null,
+      },
+      pets: {
+        status: "unknown",
+        toxicParts: [],
+        symptoms: [],
+        precautions: [
+         "Pet toxicity has not been verified.",
+          "Keep unidentified plants away from pets until confirmed safe."
+        ],
+        sourceUrl: null,
+      },
     };
 
     return Response.json({

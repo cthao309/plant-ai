@@ -5,7 +5,7 @@ import type {
   EdibilityInfo,
   RelatedPlantInfo,
   PlantMatchType,
-  ToxicityInfo,
+  ToxicityByCategory,
 } from "@/app/types/plant";
 
 export default function Home() {
@@ -23,7 +23,7 @@ export default function Home() {
     edibility: EdibilityInfo;
     relatedPlants: RelatedPlantInfo[];
     matchType: PlantMatchType;
-    toxicity: ToxicityInfo;
+    toxicity: ToxicityByCategory;
   } | null>(null);
 
   useEffect(() => {
@@ -324,63 +324,82 @@ export default function Home() {
           )}
 
           {activeCategory === "toxicity" && plantInfo && (
-            <div className="space-y-4">
+            <div className="space-y-6">
               <h3 className="text-lg font-semibold">
                 Toxicity Information
               </h3>
 
-              <p>
-                <span className="font-semibold">Status: </span>
-                {plantInfo.toxicity.status === "toxic"
-                  ? "Reported toxic"
-                  : plantInfo.toxicity.status === "not_known_toxic"
-                    ? "Not known to be toxic"
-                    : "Not verified"}
-              </p>
+              {(["human", "pets"] as const).map((category) => {
+                const info = plantInfo.toxicity[category];
 
-              {plantInfo.toxicity.toxicParts.length > 0 && (
-                <div>
-                  <p className="font-semibold">Toxic Parts</p>
-                  <ul className="list-disc pl-5">
-                    {plantInfo.toxicity.toxicParts.map((part, index) => (
-                      <li key={index}>{part}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+                return (
+                  <div
+                    key={category}
+                    className="rounded-lg border border-gray-200 p-4"
+                  >
+                    <h4 className="text-lg font-semibold">
+                      {category === "human"
+                        ? "Human Toxicity"
+                        : "Pet Toxicity"}
+                    </h4>
 
-              {plantInfo.toxicity.symptoms.length > 0 && (
-                <div>
-                  <p className="font-semibold">Possible Symptoms</p>
-                  <ul className="list-disc pl-5">
-                    {plantInfo.toxicity.symptoms.map((symptom, index) => (
-                      <li key={index}>{symptom}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+                    <p className="mt-2">
+                      <span className="font-semibold">Status: </span>
+                      {info.status === "toxic"
+                        ? "Reported toxic"
+                        : info.status === "not_known_toxic"
+                          ? "Not known to be toxic"
+                          : "Not verified"}
+                    </p>
 
-              {plantInfo.toxicity.precautions.length > 0 && (
-                <div>
-                  <p className="font-semibold">Precautions</p>
-                  <ul className="list-disc pl-5">
-                    {plantInfo.toxicity.precautions.map((precaution, index) => (
-                      <li key={index}>{precaution}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+                    {info.toxicParts.length > 0 && (
+                      <div className="mt-3">
+                        <p className="font-semibold">Toxic Parts</p>
+                        <ul className="list-disc pl-5">
+                          {info.toxicParts.map((part, index) => (
+                            <li key={index}>{part}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
 
-              {plantInfo.toxicity.sourceUrl && (
-                <a
-                  href={plantInfo.toxicity.sourceUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-600 underline"
-                >
-                  View Toxicity Source
-                </a>
-              )}
+                    {info.symptoms.length > 0 && (
+                      <div className="mt-3">
+                        <p className="font-semibold">
+                          Possible Symptoms
+                        </p>
+                        <ul className="list-disc pl-5">
+                          {info.symptoms.map((symptom, index) => (
+                            <li key={index}>{symptom}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {info.precautions.length > 0 && (
+                      <div className="mt-3">
+                        <p className="font-semibold">Precautions</p>
+                        <ul className="list-disc pl-5">
+                          {info.precautions.map((precaution, index) => (
+                            <li key={index}>{precaution}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {info.sourceUrl && (
+                      <a
+                        href={info.sourceUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-3 inline-block text-blue-600 underline"
+                      >
+                        View Toxicity Source
+                      </a>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
 
