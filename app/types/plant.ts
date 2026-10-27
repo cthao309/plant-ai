@@ -28,3 +28,11 @@ export type EdiblePlantRecord = {
   toxicity_level: string | null;
   url: string;
 };
+
+export type ToxicityInfo = {
+  status: "toxic" | "not_known_toxic" | "unknown";
+  toxicParts: string[];
+  symptoms: string[];
+  precautions: string[];
+  sourceUrl: string | null;
+};

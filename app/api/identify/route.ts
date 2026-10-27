@@ -2,6 +2,7 @@ import type {
   EdibilityInfo,
   PlantMatchType,
   EdiblePlantRecord,
+  ToxicityInfo,
 } from "@/app/types/plant";
 
 import { searchEdiblePlant } from "@/app/lib/edibility";
@@ -145,6 +146,17 @@ export async function POST(request: Request) {
       sourceUrl: null,
     }
 
+    const toxicityInfo: ToxicityInfo = {
+      status: "unknown",
+      toxicParts: [],
+      symptoms: [],
+      precautions: [
+        "Toxicity has not been verified.",
+         "Do not consume this plant without proper identification and expert advice."
+      ],
+      sourceUrl: null,
+    };
+
     return Response.json({
       message: `${plantName} — ${confidence}% confidence`,
       plantName,
@@ -154,6 +166,7 @@ export async function POST(request: Request) {
       edibilityInfo,
       relatedPlantInfo,
       matchType,
+      toxicityInfo,
     });
 
   } catch {
