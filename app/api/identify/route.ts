@@ -160,11 +160,11 @@ export async function POST(request: Request) {
       toxicityInfo,
     });
 
-  } catch {
-    return Response.json(
-      { message: "Unable to contact the plant identification service." },
-      { status: 502 }
-    );
-  }
+  } catch (error) {
+      return Response.json(
+        { message: "Unable to complete plant identification. Error: " + error },
+        { status: 502 }
+      );
+    }
 
 }

@@ -1,8 +1,18 @@
 import type { ToxicityByCategory } from "@/app/types/plant";
+import { toxicityRecords } from "./toxicity-data";
 
 export function getPlantToxicity(
   scientificName: string
 ): ToxicityByCategory {
+
+  const record = toxicityRecords.find(
+    (plant) => plant.scientificName.trim().toLowerCase() === scientificName.trim().toLowerCase()
+  );
+
+  if (record) {
+    return record.toxicity;
+  }
+
   return {
     human: {
       status: "unknown",
