@@ -206,6 +206,16 @@ export default function Home() {
 
           {result && (
             <div className="mt-4 rounded-xl border border-gray-200 bg-gray-50 p-5 text-gray-800">
+              {plantInfo?.toxicity?.human?.status === "toxic" && (
+                <div className="mb-4 rounded-lg border border-red-300 bg-red-50 p-4 text-red-800">
+                  <p className="font-semibold">
+                    ⚠️ Warning: This plant is reported toxic to humans.
+                  </p>
+                  <p className="mt-2">
+                    Do not consume this plant. See the Toxicity tab for more information.
+                  </p>
+                </div>
+              )}
               {activeCategory === "edibility" && plantInfo && (
                 <div>
                   <h3 className="mb-3 text-lg font-semibold">
