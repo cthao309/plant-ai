@@ -8,6 +8,8 @@ import type {
   ToxicityByCategory,
 } from "@/app/types/plant";
 
+import type { MedicinalInfo } from "@/app/types/medicinal";
+
 export default function Home() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -24,6 +26,7 @@ export default function Home() {
     relatedPlants: RelatedPlantInfo[];
     matchType: PlantMatchType;
     toxicity: ToxicityByCategory;
+    medicinal: MedicinalInfo;
   } | null>(null);
 
   useEffect(() => {
@@ -88,6 +91,7 @@ export default function Home() {
           relatedPlants: data.relatedPlantInfo ?? [],
           matchType: data.matchType ?? "none",
           toxicity: data.toxicityInfo,
+          medicinal: data.medicialInfo,
         });
       }
     } catch (error) {
@@ -413,23 +417,74 @@ export default function Home() {
             </div>
           )}
 
-          {activeCategory === "medicinal" && (
-            <div>
-              <h3 className="mb-2 text-lg font-semibold">Medicinal Benefits</h3>
-              <p>
-                Traditional medicinal uses, scientific evidence,
-                and potential risks will appear here.
+          {activeCategory === "medicinal" && plantInfo && (
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">
+                Medicinal Information
+              </h3>
+
+              <p className="text-sm">
+                Status: {plantInfo.medicinal.status}
+              </p>
+
+              {plantInfo.medicinal.uses.length > 0 && (
+                <div>
+                  <h4 className="font-semibold">Traditional Uses</h4>
+                  <ul className="list-disc pl-5">
+                    {plantInfo.medicinal.uses.map((use, index) => (
+                      <li key={index}>{use}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {plantInfo.medicinal.evidence.length > 0 && (
+                <div>
+                  <h4 className="font-semibold">Scientific Evidence</h4>
+                  <ul className="list-disc pl-5">
+                    {plantInfo.medicinal.evidence.map((item, index) => (
+                      <li key={index}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {plantInfo.medicinal.risks.length > 0 && (
+                <div>
+                  <h4 className="font-semibold">Risks and Precautions</h4>
+                  <ul className="list-disc pl-5">
+                    {plantInfo.medicinal.risks.map((risk, index) => (
+                      <li key={index}>{risk}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {plantInfo.medicinal.sourceUrl && (
+                <a
+                  href={plantInfo.medicinal.sourceUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 underline"
+                >
+                  View Medicinal Source
+                </a>
+              )}
+
+              <p className="text-sm text-gray-500">
+                Medicinal information is for educational purposes only.
+                Traditional uses do not establish safety or effectiveness.
               </p>
             </div>
           )}
 
           {activeCategory === "details" && plantInfo && (
-            <div>
-              <h3 className="mb-3 text-lg font-semibold">
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">
                 Plant Details
               </h3>
 
-              <div className="space-y-2 text-sm">
+              <div className="space-y-3 text-sm">
                 <p>
                   <strong>Common Name:</strong> {plantInfo.plantName}
                 </p>
@@ -441,6 +496,23 @@ export default function Home() {
 
                 <p>
                   <strong>Family:</strong> {plantInfo.family}
+                </p>
+
+                <p>
+                  <strong>Identification Confidence:</strong>{" "}
+                  {Number(plantInfo.confidence).toFixed(1)}%
+                </p>
+              </div>
+
+              <div className="rounded-lg border border-yellow-300 bg-yellow-50 p-4 text-sm text-yellow-900">
+                <p className="font-semibold">
+                  Identification Disclaimer
+                </p>
+                <p className="mt-2">
+                  AI-generated plant identification may be inaccurate.
+                  Do not consume or use a plant medicinally based solely
+                  on this identification. Consult a qualified expert
+                  when safety is uncertain.
                 </p>
               </div>
             </div>

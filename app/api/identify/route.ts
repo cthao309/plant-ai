@@ -6,6 +6,7 @@ import type {
 
 import { searchEdiblePlant } from "@/app/lib/edibility";
 import { getPlantToxicity } from "@/app/lib/toxicity";
+import { getPlantMedicinalInfo } from "@/app/lib/medicinal";
 
 export async function POST(request: Request) {
   // 1. Receive the image from our frontend
@@ -148,6 +149,8 @@ export async function POST(request: Request) {
 
     const toxicityInfo = getPlantToxicity(scientificName);
 
+    const medicialInfo = getPlantMedicinalInfo(scientificName);
+
     return Response.json({
       message: `${plantName} — ${confidence}% confidence`,
       plantName,
@@ -158,6 +161,7 @@ export async function POST(request: Request) {
       relatedPlantInfo,
       matchType,
       toxicityInfo,
+      medicialInfo,
     });
 
   } catch (error) {
