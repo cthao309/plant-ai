@@ -43,6 +43,10 @@ export default function Home() {
   function handleImageChange(event: ChangeEvent<HTMLInputElement>) {
     const file = event.currentTarget.files?.[0] ?? null;
 
+    setPlantInfo(null);
+    setResult(null);
+    setActiveCategory("edibility");
+
     if (file && !file.type.startsWith("image/")) {
       event.currentTarget.value = "";
       setSelectedFile(null);
