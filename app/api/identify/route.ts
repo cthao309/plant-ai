@@ -149,7 +149,7 @@ export async function POST(request: Request) {
 
     const toxicityInfo = getPlantToxicity(scientificName);
 
-    const medicialInfo = getPlantMedicinalInfo(scientificName);
+    const medicinalInfo = getPlantMedicinalInfo(scientificName);
 
     return Response.json({
       message: `${plantName} — ${confidence}% confidence`,
@@ -161,7 +161,7 @@ export async function POST(request: Request) {
       relatedPlantInfo,
       matchType,
       toxicityInfo,
-      medicialInfo,
+      medicinalInfo,
     });
 
   } catch (error) {
