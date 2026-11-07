@@ -1,69 +1,530 @@
-import Image from "next/image";
+"use client";
+
+import { useEffect, useState, type ChangeEvent } from "react";
+import type {
+  EdibilityInfo,
+  RelatedPlantInfo,
+  PlantMatchType,
+  ToxicityByCategory,
+} from "@/app/types/plant";
+
+import type { MedicinalInfo } from "@/app/types/medicinal";
 
 export default function Home() {
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isIdentifying, setIsIdentifying] = useState(false);
+  const [result, setResult] = useState<string | null>(null);
+  const [activeCategory, setActiveCategory] = useState
+("edibility");
+  const [plantInfo, setPlantInfo] = useState<{
+    plantName: string;
+    scientificName: string;
+    confidence: string;
+    family: string;
+    edibility: EdibilityInfo;
+    relatedPlants: RelatedPlantInfo[];
+    matchType: PlantMatchType;
+    toxicity: ToxicityByCategory;
+    medicinal: MedicinalInfo;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!previewUrl) {
+      return;
+    }
+
+    return () => {
+      URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
+
+  // Image selection handler
+  function handleImageChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.currentTarget.files?.[0] ?? null;
+
+    setPlantInfo(null);
+    setResult(null);
+    setActiveCategory("edibility");
+
+    if (file && !file.type.startsWith("image/")) {
+      event.currentTarget.value = "";
+      setSelectedFile(null);
+      setPreviewUrl(null);
+      return;
+    }
+
+    setSelectedFile(file);
+    setPreviewUrl(file ? URL.createObjectURL(file) : null);
+  }
+
+  // Plant identification handler
+  async function handleIdentifyPlant() {
+    if (!selectedFile) {
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("image", selectedFile);
+
+    setIsIdentifying(true);
+    setResult(null);
+    setPlantInfo(null);
+
+    try {
+      const response = await fetch("/api/identify", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if(!response.ok) {
+        throw new Error(data.message || "Image upload failed.");
+      }
+
+      setResult(data.message);
+
+      if(data.plantName && data.scientificName && data.confidence != null) {
+        setPlantInfo({
+          plantName: data.plantName,
+          scientificName: data.scientificName,
+          confidence: data.confidence,
+          family: data.family ?? "Unknown",
+          edibility: data.edibilityInfo,
+          relatedPlants: data.relatedPlantInfo ?? [],
+          matchType: data.matchType ?? "none",
+          toxicity: data.toxicityInfo,
+          medicinal: data.medicialInfo,
+        });
+      }
+    } catch (error) {
+      if(error instanceof Error) {
+        setResult(`Error: ${error.message}`);
+      } else {
+        setResult("Something went wrong. Please try again.");
+      }
+    } finally {
+      setIsIdentifying(false);
+    }
+  }
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <main className="flex flex-1 items-center justify-center bg-zinc-50 px-6 py-16 text-zinc-900">
+      <div className="w-full max-w-xl">
+        <h1 className="text-3xl font-bold tracking-tight">
+          Plant & Herbs Identifier
+        </h1>
+
+        <p className="mt-4 text-zinc-600">
+          Upload a photo of a plant or herb to help identify it.
+        </p>
+
+        <section
+          aria-labelledby="upload-heading"
+          className="mt-8 rounded-xl border border-zinc-200 bg-white p-6"
+        >
+          <h2 id="upload-heading" className="text-xl font-semibold">
+            Upload a plant photo
+          </h2>
+
+          <label
+            htmlFor="plant-photo"
+            className="mt-6 block text-sm font-medium"
           >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            Choose an image
+          </label>
+
+          <input
+            id="plant-photo"
+            name="plant-photo"
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            className="mt-2 block w-full text-sm text-zinc-600 file:mr-4 file:rounded-md file:border-0 file:bg-green-50 file:px-4 file:py-2 file:font-medium file:text-green-800 hover:file:bg-green-100"
+          />
+
+          {selectedFile && previewUrl && (
+            <div className="mt-6">
+              {/* This temporary URL displays the locally selected image. */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={previewUrl}
+                alt={`Preview of ${selectedFile.name}`}
+                className="max-h-80 w-full rounded-lg object-contain"
+              />
+            </div>
+          )}
+
+          <button
+            type="button"
+            onClick={handleIdentifyPlant}
+            disabled={!selectedFile || isIdentifying}
+            className="mt-6 rounded-lg bg-green-700 px-5 py-3 font-medium text-white hover:bg-green-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+            {isIdentifying ? "Identifying..." : "Identify Plant"}
+          </button>
+
+          {plantInfo && previewUrl && (
+            <div className="mt-6 flex items-center gap-4 rounded-xl border border-gray-200 p-4">
+              <img
+                src={previewUrl}
+                alt={plantInfo.plantName}
+                className="h-28 w-28 shrink-0 rounded-lg object-cover"
+              />
+
+              <div className="min-w-0 flex-1">
+                <h2 className="text-lg font-semibold text-gray-900">
+                  {plantInfo.plantName}
+                </h2>
+
+                <p className="mt-1 text-sm italic text-gray-500">
+                  {plantInfo.scientificName}
+                </p>
+
+                <p className="mt-2 text-sm font-medium text-green-700">
+                  {plantInfo.confidence}% confidence
+                </p>
+              </div>
+            </div>
+          )}
+
+          {result && (
+            <div className="mt-6 flex flex-wrap gap-2">
+              {["edibility", "toxicity", "medicinal", "details"].map(
+                (category) => (
+                  <button
+                    key={category}
+                    type="button"
+                    onClick={() => setActiveCategory(category)}
+                    className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                      activeCategory === category
+                        ? "bg-green-600 text-white"
+                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    }`}
+                  >
+                    {category === "details"
+                      ? "Plant Details"
+                      : category.charAt(0).toUpperCase() + category.slice(1)}
+                  </button>
+                )
+              )}
+            </div>
+          )}
+
+          {result && (
+            <div className="mt-4 rounded-xl border border-gray-200 bg-gray-50 p-5 text-gray-800">
+              {plantInfo?.toxicity?.human?.status === "toxic" && (
+                <div className="mb-4 rounded-lg border border-red-300 bg-red-50 p-4 text-red-800">
+                  <p className="font-semibold">
+                    ⚠️ Warning: This plant is reported toxic to humans.
+                  </p>
+                  <p className="mt-2">
+                    Do not consume this plant. See the Toxicity tab for more information.
+                  </p>
+                </div>
+              )}
+              {activeCategory === "edibility" && plantInfo && (
+                <div>
+                  <h3 className="mb-3 text-lg font-semibold">
+                    Edibility
+                  </h3>
+
+                  <p className="mb-3 text-sm">
+                    <strong>Status:</strong>{" "}
+                    {plantInfo.edibility.status === "unknown"
+                      ? "Not verified"
+                      : plantInfo.edibility.status === "commonly_eaten"
+                        ? "Commonly eaten"
+                        : "Not recommended"}
+                  </p>
+
+                  <div className="mt-4 rounded-lg bg-gray-100 p-4">
+                    <p className="font-semibold">Database Match</p>
+
+                    {plantInfo.matchType === "exact" && (
+                      <p className="mt-2">
+                        An exact scientific-name match was found in the database.
+                      </p>
+                    )}
+
+                    {plantInfo.matchType === "related" && (
+                      <p className="mt-2">
+                        No exact species match was found. Related botanical
+                        varieties are available for reference.
+                      </p>
+                    )}
+
+                    {plantInfo.matchType === "none" && (
+                      <p className="mt-2">
+                        No matching botanical records were found.
+                      </p>
+                    )}
+
+                    {plantInfo.matchType === "unavailable" && (
+                      <p className="mt-2">
+                        The plant database is temporarily unavailable.
+                        Edibility information could not be retrieved.
+                        Please try again later.
+                      </p>
+                    )}
+                  </div>
+
+                  {plantInfo.relatedPlants.length > 0 && (
+                    <div className="mt-6 border-t border-gray-200 pt-4">
+
+                      <h3 className="text-lg font-semibold">
+                        Related Botanical Information
+                      </h3>
+
+                      <p className="mt-2 text-sm text-gray-600">
+                        These records describe related botanical varieties,
+                        not necessarily the plant in your photo.
+                        They do not establish that the photographed
+                        plant is safe to consume.
+                      </p>
+
+                      {plantInfo.relatedPlants.map((plant) => (
+                        <div
+                          key={plant.scientificName}
+                          className="mt-4 rounded-lg border border-gray-200 p-4"
+                        >
+                          <p className="font-medium italic">
+                            {plant.scientificName}
+                          </p>
+
+                          <p className="mt-2">
+                            <strong>Documented edible parts:</strong>{" "}
+                            {plant.edibleParts.length > 0
+                              ? plant.edibleParts.join(", ")
+                              : "Not documented"}
+                          </p>
+
+                          <a
+                            href={plant.sourceUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mt-2 inline-block text-blue-600 underline"
+                          >
+                            View database source
+                          </a>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {plantInfo.edibility.culinaryUses.length > 0 && (
+                    <p className="mb-3 text-sm">
+                      <strong>Culinary Uses:</strong>{" "}
+                      {plantInfo.edibility.culinaryUses.join(", ")}
+                    </p>
+                  )}
+
+                  <h4 className="mb-2 font-semibold">Precautions</h4>
+
+                  <ul className="list-disc space-y-1 pl-5 text-sm">
+                    {plantInfo.edibility.precautions.map((precaution, index) => (
+                      <li key={index}>{precaution}</li>
+                    ))}
+                  </ul>
+
+                  {plantInfo.edibility.sourceUrl && (
+                    <a
+                      href={plantInfo.edibility.sourceUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-3 inline-block text-sm text-green-700 underline"
+                    >
+                      View information source
+                    </a>
+            )}
+          </div>
+          )}
+
+          {activeCategory === "toxicity" && plantInfo && (
+            <div className="space-y-6">
+              <h3 className="text-lg font-semibold">
+                Toxicity Information
+              </h3>
+
+              {(["human", "pets"] as const).map((category) => {
+                const info = plantInfo.toxicity[category];
+
+                return (
+                  <div
+                    key={category}
+                    className="rounded-lg border border-gray-200 p-4"
+                  >
+                    <h4 className="text-lg font-semibold">
+                      {category === "human"
+                        ? "Human Toxicity"
+                        : "Pet Toxicity"}
+                    </h4>
+
+                    <p className="mt-2">
+                      <span className="font-semibold">Status: </span>
+                      {info.status === "toxic"
+                        ? "Reported toxic"
+                        : info.status === "not_known_toxic"
+                          ? "Not known to be toxic"
+                          : "Not verified"}
+                    </p>
+
+                    {info.toxicParts.length > 0 && (
+                      <div className="mt-3">
+                        <p className="font-semibold">Toxic Parts</p>
+                        <ul className="list-disc pl-5">
+                          {info.toxicParts.map((part, index) => (
+                            <li key={index}>{part}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {info.symptoms.length > 0 && (
+                      <div className="mt-3">
+                        <p className="font-semibold">
+                          Possible Symptoms
+                        </p>
+                        <ul className="list-disc pl-5">
+                          {info.symptoms.map((symptom, index) => (
+                            <li key={index}>{symptom}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {info.precautions.length > 0 && (
+                      <div className="mt-3">
+                        <p className="font-semibold">Precautions</p>
+                        <ul className="list-disc pl-5">
+                          {info.precautions.map((precaution, index) => (
+                            <li key={index}>{precaution}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {info.sourceUrl && (
+                      <a
+                        href={info.sourceUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-3 inline-block text-blue-600 underline"
+                      >
+                        View Toxicity Source
+                      </a>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {activeCategory === "medicinal" && plantInfo && (
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">
+                Medicinal Information
+              </h3>
+
+              <p className="text-sm">
+                Status: {plantInfo.medicinal.status}
+              </p>
+
+              {plantInfo.medicinal.uses.length > 0 && (
+                <div>
+                  <h4 className="font-semibold">Traditional Uses</h4>
+                  <ul className="list-disc pl-5">
+                    {plantInfo.medicinal.uses.map((use, index) => (
+                      <li key={index}>{use}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {plantInfo.medicinal.evidence.length > 0 && (
+                <div>
+                  <h4 className="font-semibold">Scientific Evidence</h4>
+                  <ul className="list-disc pl-5">
+                    {plantInfo.medicinal.evidence.map((item, index) => (
+                      <li key={index}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {plantInfo.medicinal.risks.length > 0 && (
+                <div>
+                  <h4 className="font-semibold">Risks and Precautions</h4>
+                  <ul className="list-disc pl-5">
+                    {plantInfo.medicinal.risks.map((risk, index) => (
+                      <li key={index}>{risk}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {plantInfo.medicinal.sourceUrl && (
+                <a
+                  href={plantInfo.medicinal.sourceUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 underline"
+                >
+                  View Medicinal Source
+                </a>
+              )}
+
+              <p className="text-sm text-gray-500">
+                Medicinal information is for educational purposes only.
+                Traditional uses do not establish safety or effectiveness.
+              </p>
+            </div>
+          )}
+
+          {activeCategory === "details" && plantInfo && (
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">
+                Plant Details
+              </h3>
+
+              <div className="space-y-3 text-sm">
+                <p>
+                  <strong>Common Name:</strong> {plantInfo.plantName}
+                </p>
+
+                <p>
+                  <strong>Scientific Name:</strong>{" "}
+                  <em>{plantInfo.scientificName}</em>
+                </p>
+
+                <p>
+                  <strong>Family:</strong> {plantInfo.family}
+                </p>
+
+                <p>
+                  <strong>Identification Confidence:</strong>{" "}
+                  {Number(plantInfo.confidence).toFixed(1)}%
+                </p>
+              </div>
+
+              <div className="rounded-lg border border-yellow-300 bg-yellow-50 p-4 text-sm text-yellow-900">
+                <p className="font-semibold">
+                  Identification Disclaimer
+                </p>
+                <p className="mt-2">
+                  AI-generated plant identification may be inaccurate.
+                  Do not consume or use a plant medicinally based solely
+                  on this identification. Consult a qualified expert
+                  when safety is uncertain.
+                </p>
+              </div>
+            </div>
+          )}
+          </div>
+          )}
+        </section>
+      </div>
+    </main>
   );
 }
