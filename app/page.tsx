@@ -95,7 +95,7 @@ export default function Home() {
           relatedPlants: data.relatedPlantInfo ?? [],
           matchType: data.matchType ?? "none",
           toxicity: data.toxicityInfo,
-          medicinal: data.medicialInfo,
+          medicinal: data.medicinalInfo,
         });
       }
     } catch (error) {
